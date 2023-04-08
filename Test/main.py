@@ -64,27 +64,35 @@ if not set(student_counseling_info["Department_ID"]).issubset(set(department_inf
 # check the range of marks and filter out invalid records
 invalid_marks = student_performance_data[(student_performance_data['Marks'] < 0) | (student_performance_data['Marks'] > 100)]
 if len(invalid_marks) > 0:
-    print("Invalid marks found")
+    sum_invalid_marks = len(invalid_marks)
+    print(f"{sum_invalid_marks} mark(s) found and removed.")
     student_performance_data = student_performance_data[(student_performance_data['Marks'] >= 0) & (student_performance_data['Marks'] <= 100)]
 
 
 # Validate and filter out rows with invalid Effort_Hours values
 invalid_rows = student_performance_data[~(student_performance_data['Effort_Hours'].ge(0) & student_performance_data['Effort_Hours'].astype(str).str.isdigit())]
 if not invalid_rows.empty:
-    print("Invalid rows found in Effort_Hours")
+    sum_invalid_rows = len(invalid_rows)
+    print(f"{sum_invalid_rows} invalid row(s) found in Effort_Hours and removed.")
     student_performance_data = student_performance_data.drop(invalid_rows.index)
 
 # A given Student_ID cannot have more than 1 mark per each Paper_ID
 #TODO: This one isn't working
-if len(student_performance_data.groupby(['Student_ID', 'Paper_ID']).filter(lambda x: len(x)>1)) > 0:
-    print('Error: A given Student_ID cannot have more than 1 mark per each Paper_ID in the student_performance_data table')
-    paper_count = student_performance_data.groupby(['Student_ID', 'Paper_ID']).size().reset_index(name='counts')
-    multi_marks = paper_count[paper_count['counts'] > 1]
-    student_performance_data = student_performance_data[~student_performance_data.isin(multi_marks)].dropna()
+#if len(student_performance_data.groupby(['Student_ID', 'Paper_ID']).filter(lambda x: len(x)>1)) > 0:
+   # print('Error: A given Student_ID cannot have more than 1 mark per each Paper_ID in the student_performance_data table')
+  #  paper_count = student_performance_data.groupby(['Student_ID', 'Paper_ID']).size().reset_index(name='counts')
+   # multi_marks = paper_count[paper_count['counts'] > 1]
+  #  student_performance_data = student_performance_data[~student_performance_data.isin(multi_marks)].dropna()
+
+#Updated, duplicated should work for this according to what i've looked at. The documentation just requires 
+#an error exception, so I didn't include the paper_count etc... though it does work with it.
+if len(student_performance_data.duplicated(subset=['Student_ID', 'Paper_ID'], keep= False)):
+    print('Error: A given Student_ID cannot have more than 1 mark per each Paper_ID in the student_performance_data table.')
 
 # check for missing values
 if student_performance_data.isnull().values.any():
-    print("student_performance_data table contains missing values. Removing rows...")
+    missingvalues = student_performance_data.isnull().values.sum()
+    print(f"Student_performance_data table contained {missingvalues} missing value(s). Removing rows...")
     student_performance_data = student_performance_data.dropna()
 
 # Export cleaned up files to new csv files in the folder "output"
@@ -92,5 +100,3 @@ department_info.to_csv('./output/department_info.csv', index=False)
 employee_info.to_csv('./output/employee_info.csv', index=False)
 student_counseling_info.to_csv('./output/student_counseling_info.csv', index=False)
 student_performance_data.to_csv('./output/student_performance_info.csv', index=False)
-
-#NOTE: If you want to run this again, delete any files in the output folder to avoid error then run the script
