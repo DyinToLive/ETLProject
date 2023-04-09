@@ -77,15 +77,6 @@ if not invalid_rows.empty:
     student_performance_data = student_performance_data.drop(invalid_rows.index)
 
 # A given Student_ID cannot have more than 1 mark per each Paper_ID
-#TODO: This one isn't working
-#if len(student_performance_data.groupby(['Student_ID', 'Paper_ID']).filter(lambda x: len(x)>1)) > 0:
-   # print('Error: A given Student_ID cannot have more than 1 mark per each Paper_ID in the student_performance_data table')
-  #  paper_count = student_performance_data.groupby(['Student_ID', 'Paper_ID']).size().reset_index(name='counts')
-   # multi_marks = paper_count[paper_count['counts'] > 1]
-  #  student_performance_data = student_performance_data[~student_performance_data.isin(multi_marks)].dropna()
-
-#Updated, duplicated should work for this according to what i've looked at. The documentation just requires 
-#an error exception, so I didn't include the paper_count etc... though it does work with it.
 if len(student_performance_data.duplicated(subset=['Student_ID', 'Paper_ID'], keep= False)):
     print('Error: A given Student_ID cannot have more than 1 mark per each Paper_ID in the student_performance_data table.')
 
